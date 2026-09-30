@@ -3,11 +3,13 @@ import { Task } from "@/lib/types";
 import { TaskList } from "@/components/TaskList";
 import { TaskListSkeleton } from "@/components/TaskListSkeleton";
 import { useEffect, useState } from "react";
+import { MdErrorOutline, MdClose } from "react-icons/md";
 
 export default function Home() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [newTitle, setNewTitle] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     async function loadTasks() {
@@ -15,7 +17,7 @@ export default function Home() {
         const res = await fetch("/api/tasks");
 
         if (!res.ok) {
-          console.error("Error while retrieving tasks");
+          setError("Couldn't load your tasks. Try refreshing the page.");
           return;
         }
 
@@ -23,6 +25,7 @@ export default function Home() {
         setTasks(data);
       } catch (error) {
         console.error("Error while retrieving tasks", { error });
+        setError("Couldn't load your tasks. Check your connection and try again.");
       } finally {
         setIsLoading(false);
       }
@@ -42,14 +45,16 @@ export default function Home() {
       });
 
       if (!res.ok) {
-        console.error("Error while toggling task");
+        setError("Couldn't update that task. Please try again.");
         return;
       }
 
       const updatedTask: Task = await res.json();
       setTasks(tasks.map((el) => (el.id === id ? updatedTask : el)));
+      setError(null);
     } catch (error) {
       console.error("Error while toggling task", { error });
+      setError("Couldn't update that task. Check your connection and try again.");
     }
   }
 
@@ -68,17 +73,18 @@ export default function Home() {
       });
 
       if (!res.ok) {
-        console.error("Error while adding task");
+        setError("Couldn't add that task. Please try again.");
         return;
       }
 
       const createdTask: Task = await res.json();
       setTasks([...tasks, createdTask]);
+      setError(null);
+      setNewTitle("");
     } catch (error) {
       console.error("Error while adding task", { error });
+      setError("Couldn't add that task. Check your connection and try again.");
     }
-
-    setNewTitle("");
   }
 
   async function handleEditTitle(id: string, title: string) {
@@ -90,14 +96,16 @@ export default function Home() {
       });
 
       if (!res.ok) {
-        console.error("Error while editing task");
+        setError("Couldn't rename that task. Please try again.");
         return;
       }
 
       const updatedTask: Task = await res.json();
       setTasks(tasks.map((el) => (el.id === id ? updatedTask : el)));
+      setError(null);
     } catch (error) {
       console.error("Error while editing task", { error });
+      setError("Couldn't rename that task. Check your connection and try again.");
     }
   }
 
@@ -106,13 +114,15 @@ export default function Home() {
       const res = await fetch(`/api/tasks/${id}`, { method: "DELETE" });
 
       if (!res.ok) {
-        console.error("Error while deleting task");
+        setError("Couldn't delete that task. Please try again.");
         return;
       }
 
       setTasks(tasks.filter((el) => el.id !== id));
+      setError(null);
     } catch (error) {
       console.error("Error while deleting task", { error });
+      setError("Couldn't delete that task. Check your connection and try again.");
     }
   }
 
@@ -125,6 +135,23 @@ export default function Home() {
             {tasks.filter((t) => !t.completed).length} open
           </span>
         </div>
+
+        {error && (
+          <div
+            role="alert"
+            className="mb-4 flex items-start gap-2 rounded-lg bg-red-50 px-3 py-2.5 text-sm text-red-700 dark:bg-red-950 dark:text-red-300"
+          >
+            <MdErrorOutline className="mt-0.5 h-4 w-4 shrink-0" />
+            <span className="flex-1">{error}</span>
+            <button
+              onClick={() => setError(null)}
+              aria-label="Dismiss error"
+              className="shrink-0 rounded p-0.5 hover:bg-red-100 dark:hover:bg-red-900"
+            >
+              <MdClose className="h-4 w-4" />
+            </button>
+          </div>
+        )}
 
         <form onSubmit={handleAddTask} className="mb-6 flex gap-2">
           <input

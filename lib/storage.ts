@@ -10,8 +10,8 @@ export async function readTasks(): Promise<Task[]> {
   try {
     const raw = await fs.readFile(DATA_FILE, "utf-8");
     return JSON.parse(raw) as Task[];
-  } catch (error: any) {
-    if (error.code === "ENOENT") {
+  } catch (error) {
+    if (error instanceof Error && "code" in error && error.code === "ENOENT") {
       return [];
     }
     throw error;

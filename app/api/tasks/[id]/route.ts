@@ -7,12 +7,12 @@ export async function DELETE(request: Request, context: RouteContext<"/api/tasks
     const allTasks: Task[] = await readTasks();
 
     if (!allTasks || allTasks.length === 0) {
-      return Response.json({ error: "Requested task is missing" }, { status: 400 });
+      return Response.json({ error: "Requested task is missing" }, { status: 404 });
     }
 
     const filteredTasks = allTasks.filter((el) => el.id !== id);
     if (filteredTasks.length === allTasks.length) {
-      return Response.json({ error: "Requested task is missing" }, { status: 400 });
+      return Response.json({ error: "Requested task is missing" }, { status: 404 });
     }
     await writeTasks(filteredTasks);
 
@@ -39,11 +39,11 @@ export async function PATCH(request: Request, context: RouteContext<"/api/tasks/
     const allTasks: Task[] = await readTasks();
 
     if (!allTasks || allTasks.length === 0) {
-      return Response.json({ error: "Requested task is missing" }, { status: 400 });
+      return Response.json({ error: "Requested task is missing" }, { status: 404 });
     }
     const targetTaskIndex = allTasks.findIndex((el) => el.id === id);
     if (targetTaskIndex === -1) {
-      return Response.json({ error: "Requested task is missing" }, { status: 400 });
+      return Response.json({ error: "Requested task is missing" }, { status: 404 });
     }
 
     const updatedTaskList = allTasks.map((el) => {
@@ -59,6 +59,6 @@ export async function PATCH(request: Request, context: RouteContext<"/api/tasks/
 
     return Response.json(updatedTaskList[targetTaskIndex], { status: 200 });
   } catch (error) {
-    return Response.json({ error: "Error occurred while deleting the task" }, { status: 500 });
+    return Response.json({ error: "Error occurred while updating the task" }, { status: 500 });
   }
 }

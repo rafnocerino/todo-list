@@ -12,13 +12,13 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    const body: { title: string } = await request.json();
-    if (!body?.title) {
+    const body: { title?: string } = await request.json();
+    if (!body?.title || !body.title.trim()) {
       return Response.json({ error: "Invalid task format" }, { status: 400 });
     }
 
     const task: Task = {
-      title: body.title,
+      title: body.title.trim(),
       id: crypto.randomUUID(),
       completed: false,
       createdAt: new Date().toISOString(),
