@@ -104,23 +104,28 @@ export default function Home() {
   }
 
   return (
-    <div className="flex flex-col flex-1 items-center bg-zinc-50 dark:bg-zinc-950">
-      <main className="flex flex-1 w-full max-w-xl flex-col py-12 px-6 sm:px-0">
-        <h1 className="text-2xl font-semibold mb-6 text-zinc-900 dark:text-zinc-50">
-          To-Do List
-        </h1>
+    <div className="flex flex-col flex-1 items-center bg-stone-200 px-4 py-10 dark:bg-stone-950 sm:py-16">
+      <main className="w-full max-w-xl rounded-2xl bg-teal-50 p-5 ring-1 ring-teal-900/5 dark:bg-stone-900 dark:ring-teal-50/5 sm:p-8">
+        <div className="mb-6 flex items-baseline justify-between">
+          <h1 className="text-2xl font-semibold text-teal-950 dark:text-teal-50">
+            To-Do List
+          </h1>
+          <span className="rounded-full bg-teal-700/10 px-2.5 py-1 font-mono text-xs text-teal-800 dark:bg-teal-400/10 dark:text-teal-300">
+            {tasks.filter((t) => !t.completed).length} open
+          </span>
+        </div>
 
-        <form onSubmit={handleAddTask} className="flex gap-2 mb-6">
+        <form onSubmit={handleAddTask} className="mb-6 flex gap-2">
           <input
             type="text"
             value={newTitle}
             onChange={(e) => setNewTitle(e.target.value)}
             placeholder="What needs to be done?"
-            className="flex-1 rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50 dark:focus:ring-zinc-100"
+            className="flex-1 rounded-lg border border-teal-900/15 bg-white px-3 py-2 text-sm text-teal-950 placeholder:text-teal-900/40 focus:outline-none focus:ring-2 focus:ring-teal-600 dark:border-teal-50/15 dark:bg-stone-800 dark:text-teal-50 dark:placeholder:text-teal-50/30 dark:focus:ring-teal-400"
           />
           <button
             type="submit"
-            className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-700 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
+            className="rounded-lg bg-teal-700 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-teal-800 dark:bg-teal-500 dark:text-teal-950 dark:hover:bg-teal-400"
           >
             Add
           </button>
@@ -129,7 +134,7 @@ export default function Home() {
         {isLoading ? (
           <TaskListSkeleton />
         ) : tasks.length === 0 ? (
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">No tasks yet — add one above.</p>
+          <p className="text-sm text-teal-900/50 dark:text-teal-50/40">No tasks yet — add one above.</p>
         ) : (
           <TaskList tasks={tasks} handleToggle={handleToggle} handleDelete={handleDeleteTask} />
         )}
