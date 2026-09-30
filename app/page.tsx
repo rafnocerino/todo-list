@@ -1,6 +1,7 @@
 "use client";
 import { Task } from "@/lib/types";
 import { TaskList } from "@/components/TaskList";
+import { TaskListSkeleton } from "@/components/TaskListSkeleton";
 import { useEffect, useState } from "react";
 
 export default function Home() {
@@ -126,7 +127,7 @@ export default function Home() {
         </form>
 
         {isLoading ? (
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">Loading tasks…</p>
+          <TaskListSkeleton />
         ) : tasks.length === 0 ? (
           <p className="text-sm text-zinc-500 dark:text-zinc-400">No tasks yet — add one above.</p>
         ) : (

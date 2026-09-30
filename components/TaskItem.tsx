@@ -1,4 +1,5 @@
 import { Task } from "@/lib/types";
+import { MdDeleteOutline } from "react-icons/md";
 
 export function TaskItem({task, onToggle, onDelete}: {task: Task, onToggle: (id: string) => void, onDelete: (id: string) => void}) {
     return (
@@ -21,9 +22,9 @@ export function TaskItem({task, onToggle, onDelete}: {task: Task, onToggle: (id:
             <button
                 onClick={() => onDelete(task.id)}
                 aria-label={`Delete "${task.title}"`}
-                className="text-sm text-zinc-400 transition-colors hover:text-red-600 dark:text-zinc-500 dark:hover:text-red-400"
+                className="shrink-0 rounded-lg p-1.5 text-zinc-400 transition-colors hover:bg-red-50 hover:text-red-600 dark:text-zinc-500 dark:hover:bg-red-950 dark:hover:text-red-400"
             >
-                Delete
+                <MdDeleteOutline className="h-5 w-5" />
             </button>
         </li>
     );
