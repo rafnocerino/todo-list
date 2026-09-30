@@ -5,12 +5,11 @@ import { TaskListSkeleton } from "@/components/TaskListSkeleton";
 import { useEffect, useState } from "react";
 
 export default function Home() {
-
   const [tasks, setTasks] = useState<Task[]>([]);
   const [newTitle, setNewTitle] = useState("");
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect( () => {
+  useEffect(() => {
     async function loadTasks() {
       try {
         const res = await fetch("/api/tasks");
@@ -22,19 +21,17 @@ export default function Home() {
 
         const data: Task[] = await res.json();
         setTasks(data);
-
       } catch (error) {
-        console.error("Error while retrieving tasks", {error});
+        console.error("Error while retrieving tasks", { error });
       } finally {
         setIsLoading(false);
       }
-      
     }
     loadTasks();
-  }, [])
+  }, []);
 
   async function handleToggle(id: string) {
-    const task = tasks.find(t => t.id === id);
+    const task = tasks.find((t) => t.id === id);
     if (!task) return;
 
     try {
@@ -50,14 +47,13 @@ export default function Home() {
       }
 
       const updatedTask: Task = await res.json();
-      setTasks(tasks.map(el => el.id === id ? updatedTask : el));
-
+      setTasks(tasks.map((el) => (el.id === id ? updatedTask : el)));
     } catch (error) {
       console.error("Error while toggling task", { error });
     }
   }
 
-  async function handleAddTask(event : React.FormEvent<HTMLFormElement>) {
+  async function handleAddTask(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     if (!newTitle.trim()) {
@@ -65,7 +61,7 @@ export default function Home() {
     }
 
     try {
-       const res = await fetch("/api/tasks", {
+      const res = await fetch("/api/tasks", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ title: newTitle }),
@@ -78,10 +74,8 @@ export default function Home() {
 
       const createdTask: Task = await res.json();
       setTasks([...tasks, createdTask]);
-      
-
     } catch (error) {
-      console.error("Error while adding task", {error});
+      console.error("Error while adding task", { error });
     }
 
     setNewTitle("");
@@ -101,8 +95,7 @@ export default function Home() {
       }
 
       const updatedTask: Task = await res.json();
-      setTasks(tasks.map(el => el.id === id ? updatedTask : el));
-
+      setTasks(tasks.map((el) => (el.id === id ? updatedTask : el)));
     } catch (error) {
       console.error("Error while editing task", { error });
     }
@@ -117,8 +110,7 @@ export default function Home() {
         return;
       }
 
-      setTasks(tasks.filter(el => el.id !== id));
-
+      setTasks(tasks.filter((el) => el.id !== id));
     } catch (error) {
       console.error("Error while deleting task", { error });
     }
@@ -128,9 +120,7 @@ export default function Home() {
     <div className="flex flex-col flex-1 items-center bg-stone-200 px-4 py-10 dark:bg-stone-950 sm:py-16">
       <main className="w-full max-w-xl rounded-2xl bg-teal-50 p-5 ring-1 ring-teal-900/5 dark:bg-stone-900 dark:ring-teal-50/5 sm:p-8">
         <div className="mb-6 flex items-baseline justify-between">
-          <h1 className="text-2xl font-semibold text-teal-950 dark:text-teal-50">
-            To-Do List
-          </h1>
+          <h1 className="text-2xl font-semibold text-teal-950 dark:text-teal-50">To-Do List</h1>
           <span className="rounded-full bg-teal-700/10 px-2.5 py-1 font-mono text-xs text-teal-800 dark:bg-teal-400/10 dark:text-teal-300">
             {tasks.filter((t) => !t.completed).length} open
           </span>
@@ -155,9 +145,16 @@ export default function Home() {
         {isLoading ? (
           <TaskListSkeleton />
         ) : tasks.length === 0 ? (
-          <p className="text-sm text-teal-900/50 dark:text-teal-50/40">No tasks yet — add one above.</p>
+          <p className="text-sm text-teal-900/50 dark:text-teal-50/40">
+            No tasks yet — add one above.
+          </p>
         ) : (
-          <TaskList tasks={tasks} handleToggle={handleToggle} handleDelete={handleDeleteTask} handleEdit={handleEditTitle} />
+          <TaskList
+            tasks={tasks}
+            handleToggle={handleToggle}
+            handleDelete={handleDeleteTask}
+            handleEdit={handleEditTitle}
+          />
         )}
       </main>
     </div>

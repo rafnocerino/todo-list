@@ -1,73 +1,64 @@
 import { readTasks, writeTasks } from "@/lib/storage";
 import { Task } from "@/lib/types";
 
-export async function DELETE(
-  request: Request,
-  context: RouteContext<"/api/tasks/[id]">
-) {
+export async function DELETE(request: Request, context: RouteContext<"/api/tasks/[id]">) {
   const { id } = await context.params;
   try {
     const allTasks: Task[] = await readTasks();
 
     if (!allTasks || allTasks.length === 0) {
-        return Response.json({error: "Requested task is missing"}, {status: 400});
+      return Response.json({ error: "Requested task is missing" }, { status: 400 });
     }
 
-    const filteredTasks = allTasks.filter(el => el.id !== id);
+    const filteredTasks = allTasks.filter((el) => el.id !== id);
     if (filteredTasks.length === allTasks.length) {
-        return Response.json({error: "Requested task is missing"}, {status: 400});
+      return Response.json({ error: "Requested task is missing" }, { status: 400 });
     }
     await writeTasks(filteredTasks);
 
-    return Response.json({"message": "Task removed successfully"}, {status: 200});
-
+    return Response.json({ message: "Task removed successfully" }, { status: 200 });
   } catch (error) {
-
-    return Response.json({error: "Error occurred while deleting the task"}, {status: 500});
+    return Response.json({ error: "Error occurred while deleting the task" }, { status: 500 });
   }
 }
 
-export async function PATCH(
-  request: Request,
-  context: RouteContext<"/api/tasks/[id]">
-) {
+export async function PATCH(request: Request, context: RouteContext<"/api/tasks/[id]">) {
   const { id } = await context.params;
 
   try {
     const body: { completed?: boolean; title?: string } = await request.json();
 
     if (body.completed === undefined && body.title === undefined) {
-      return Response.json({error: "No valid fields to update"}, {status: 400});
+      return Response.json({ error: "No valid fields to update" }, { status: 400 });
     }
 
     if (body.title !== undefined && !body.title.trim()) {
-      return Response.json({error: "Title cannot be empty"}, {status: 400});
+      return Response.json({ error: "Title cannot be empty" }, { status: 400 });
     }
 
     const allTasks: Task[] = await readTasks();
 
     if (!allTasks || allTasks.length === 0) {
-        return Response.json({error: "Requested task is missing"}, {status: 400});
+      return Response.json({ error: "Requested task is missing" }, { status: 400 });
     }
-    const targetTaskIndex = allTasks.findIndex(el => el.id === id)
+    const targetTaskIndex = allTasks.findIndex((el) => el.id === id);
     if (targetTaskIndex === -1) {
-        return Response.json({error: "Requested task is missing"}, {status: 400});
+      return Response.json({ error: "Requested task is missing" }, { status: 400 });
     }
 
-    const updatedTaskList = allTasks.map(el => {
-        if (el.id !== id) return el;
-        return {
-            ...el,
-            ...(body.completed !== undefined ? { completed: body.completed } : {}),
-            ...(body.title !== undefined ? { title: body.title.trim() } : {}),
-        };
-    })
+    const updatedTaskList = allTasks.map((el) => {
+      if (el.id !== id) return el;
+      return {
+        ...el,
+        ...(body.completed !== undefined ? { completed: body.completed } : {}),
+        ...(body.title !== undefined ? { title: body.title.trim() } : {}),
+      };
+    });
 
     await writeTasks(updatedTaskList);
 
-    return Response.json(updatedTaskList[targetTaskIndex], {status: 200});
-
+    return Response.json(updatedTaskList[targetTaskIndex], { status: 200 });
   } catch (error) {
-    return Response.json({error: "Error occurred while deleting the task"}, {status: 500});
+    return Response.json({ error: "Error occurred while deleting the task" }, { status: 500 });
   }
 }

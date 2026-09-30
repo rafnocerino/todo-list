@@ -19,8 +19,8 @@ export async function readTasks(): Promise<Task[]> {
 }
 
 export async function writeTasks(tasks: Task[]): Promise<void> {
-  // create the folder to avoid failure the first time  
+  // create the folder to avoid failure the first time
   await fs.mkdir(path.dirname(DATA_FILE), { recursive: true });
-  
+
   await fs.writeFile(DATA_FILE, JSON.stringify(tasks, null, 2), "utf-8");
 }
