@@ -32,8 +32,18 @@ export async function PATCH(
   context: RouteContext<"/api/tasks/[id]">
 ) {
   const { id } = await context.params;
-  const body: { completed: boolean } = await request.json();
+
   try {
+    const body: { completed?: boolean; title?: string } = await request.json();
+
+    if (body.completed === undefined && body.title === undefined) {
+      return Response.json({error: "No valid fields to update"}, {status: 400});
+    }
+
+    if (body.title !== undefined && !body.title.trim()) {
+      return Response.json({error: "Title cannot be empty"}, {status: 400});
+    }
+
     const allTasks: Task[] = await readTasks();
 
     if (!allTasks || allTasks.length === 0) {
@@ -45,7 +55,12 @@ export async function PATCH(
     }
 
     const updatedTaskList = allTasks.map(el => {
-        return el.id === id ? {...el, completed: body.completed} : el;
+        if (el.id !== id) return el;
+        return {
+            ...el,
+            ...(body.completed !== undefined ? { completed: body.completed } : {}),
+            ...(body.title !== undefined ? { title: body.title.trim() } : {}),
+        };
     })
 
     await writeTasks(updatedTaskList);

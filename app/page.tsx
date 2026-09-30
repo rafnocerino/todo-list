@@ -87,6 +87,27 @@ export default function Home() {
     setNewTitle("");
   }
 
+  async function handleEditTitle(id: string, title: string) {
+    try {
+      const res = await fetch(`/api/tasks/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title }),
+      });
+
+      if (!res.ok) {
+        console.error("Error while editing task");
+        return;
+      }
+
+      const updatedTask: Task = await res.json();
+      setTasks(tasks.map(el => el.id === id ? updatedTask : el));
+
+    } catch (error) {
+      console.error("Error while editing task", { error });
+    }
+  }
+
   async function handleDeleteTask(id: string) {
     try {
       const res = await fetch(`/api/tasks/${id}`, { method: "DELETE" });
@@ -136,7 +157,7 @@ export default function Home() {
         ) : tasks.length === 0 ? (
           <p className="text-sm text-teal-900/50 dark:text-teal-50/40">No tasks yet — add one above.</p>
         ) : (
-          <TaskList tasks={tasks} handleToggle={handleToggle} handleDelete={handleDeleteTask} />
+          <TaskList tasks={tasks} handleToggle={handleToggle} handleDelete={handleDeleteTask} handleEdit={handleEditTitle} />
         )}
       </main>
     </div>
