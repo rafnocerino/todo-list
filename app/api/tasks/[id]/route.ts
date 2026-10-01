@@ -1,14 +1,10 @@
 import { readTasks, writeTasks } from "@/lib/storage";
-import { Task } from "@/lib/types";
+import { MAX_TITLE_LENGTH, Task } from "@/lib/types";
 
 export async function DELETE(request: Request, context: RouteContext<"/api/tasks/[id]">) {
   const { id } = await context.params;
   try {
     const allTasks: Task[] = await readTasks();
-
-    if (!allTasks || allTasks.length === 0) {
-      return Response.json({ error: "Requested task is missing" }, { status: 404 });
-    }
 
     const filteredTasks = allTasks.filter((el) => el.id !== id);
     if (filteredTasks.length === allTasks.length) {
@@ -18,6 +14,7 @@ export async function DELETE(request: Request, context: RouteContext<"/api/tasks
 
     return Response.json({ message: "Task removed successfully" }, { status: 200 });
   } catch (error) {
+    // it could be useful to also log the error on file (avoived for brevity)
     return Response.json({ error: "Error occurred while deleting the task" }, { status: 500 });
   }
 }
@@ -32,15 +29,19 @@ export async function PATCH(request: Request, context: RouteContext<"/api/tasks/
       return Response.json({ error: "No valid fields to update" }, { status: 400 });
     }
 
-    if (body.title !== undefined && !body.title.trim()) {
+    const title = body.title !== undefined ? body.title.trim() : undefined;
+    if (title !== undefined && !title) {
       return Response.json({ error: "Title cannot be empty" }, { status: 400 });
+    }
+    if (title !== undefined && title.length > MAX_TITLE_LENGTH) {
+      return Response.json(
+        { error: `Title must be at most ${MAX_TITLE_LENGTH} characters` },
+        { status: 400 },
+      );
     }
 
     const allTasks: Task[] = await readTasks();
 
-    if (!allTasks || allTasks.length === 0) {
-      return Response.json({ error: "Requested task is missing" }, { status: 404 });
-    }
     const targetTaskIndex = allTasks.findIndex((el) => el.id === id);
     if (targetTaskIndex === -1) {
       return Response.json({ error: "Requested task is missing" }, { status: 404 });
@@ -51,7 +52,7 @@ export async function PATCH(request: Request, context: RouteContext<"/api/tasks/
       return {
         ...el,
         ...(body.completed !== undefined ? { completed: body.completed } : {}),
-        ...(body.title !== undefined ? { title: body.title.trim() } : {}),
+        ...(title !== undefined ? { title } : {}),
       };
     });
 
@@ -59,6 +60,7 @@ export async function PATCH(request: Request, context: RouteContext<"/api/tasks/
 
     return Response.json(updatedTaskList[targetTaskIndex], { status: 200 });
   } catch (error) {
+    // it could be useful to also log the error on file (avoived for brevity)
     return Response.json({ error: "Error occurred while updating the task" }, { status: 500 });
   }
 }
