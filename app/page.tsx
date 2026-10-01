@@ -5,6 +5,7 @@ import { TaskListSkeleton } from "@/components/TaskListSkeleton";
 import { useEffect, useState } from "react";
 import { MdErrorOutline, MdClose } from "react-icons/md";
 
+// this is the main component
 export default function Home() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [newTitle, setNewTitle] = useState("");

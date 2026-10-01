@@ -61,6 +61,7 @@ export function TaskItem({
           onChange={(e) => setDraftTitle(e.target.value)}
           onBlur={commitEdit}
           onKeyDown={handleKeyDown}
+          placeholder="Task title"
           className="flex-1 rounded border border-teal-600 bg-white px-1.5 py-0.5 text-sm text-teal-950 focus:outline-none dark:bg-stone-900 dark:text-teal-50"
         />
       ) : (
