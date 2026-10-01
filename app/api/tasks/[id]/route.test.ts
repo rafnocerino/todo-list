@@ -1,12 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { Task } from "@/lib/types";
 
-const { readTasks, writeTasks } = vi.hoisted(() => ({
-  readTasks: vi.fn(),
-  writeTasks: vi.fn(),
+const { updateTask, deleteTask } = vi.hoisted(() => ({
+  updateTask: vi.fn(),
+  deleteTask: vi.fn(),
 }));
 
-vi.mock("@/lib/storage", () => ({ readTasks, writeTasks }));
+vi.mock("@/lib/storage", () => ({ updateTask, deleteTask }));
 
 const { PATCH, DELETE } = await import("./route");
 
@@ -20,12 +20,6 @@ const taskA: Task = {
   completed: false,
   createdAt: "2026-01-01T00:00:00.000Z",
 };
-const taskB: Task = {
-  id: "b",
-  title: "Task B",
-  completed: true,
-  createdAt: "2026-01-02T00:00:00.000Z",
-};
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -33,7 +27,7 @@ beforeEach(() => {
 
 describe("PATCH /api/tasks/:id", () => {
   it("updates completed and returns the updated task", async () => {
-    readTasks.mockResolvedValue([taskA, taskB]);
+    updateTask.mockReturnValue({ ...taskA, completed: true });
 
     const request = new Request("http://localhost/api/tasks/a", {
       method: "PATCH",
@@ -45,11 +39,11 @@ describe("PATCH /api/tasks/:id", () => {
 
     expect(res.status).toBe(200);
     expect(updated).toMatchObject({ id: "a", completed: true, title: "Task A" });
-    expect(writeTasks).toHaveBeenCalledWith([{ ...taskA, completed: true }, taskB]);
+    expect(updateTask).toHaveBeenCalledWith("a", { completed: true });
   });
 
   it("updates the title, trimming whitespace, without touching other tasks", async () => {
-    readTasks.mockResolvedValue([taskA, taskB]);
+    updateTask.mockReturnValue({ ...taskA, title: "Renamed" });
 
     const request = new Request("http://localhost/api/tasks/a", {
       method: "PATCH",
@@ -61,12 +55,10 @@ describe("PATCH /api/tasks/:id", () => {
 
     expect(res.status).toBe(200);
     expect(updated.title).toBe("Renamed");
-    expect(writeTasks).toHaveBeenCalledWith([{ ...taskA, title: "Renamed" }, taskB]);
+    expect(updateTask).toHaveBeenCalledWith("a", { title: "Renamed" });
   });
 
   it("rejects a request with neither completed nor title", async () => {
-    readTasks.mockResolvedValue([taskA]);
-
     const request = new Request("http://localhost/api/tasks/a", {
       method: "PATCH",
       body: JSON.stringify({}),
@@ -75,12 +67,10 @@ describe("PATCH /api/tasks/:id", () => {
     const res = await PATCH(request, context("a"));
 
     expect(res.status).toBe(400);
-    expect(writeTasks).not.toHaveBeenCalled();
+    expect(updateTask).not.toHaveBeenCalled();
   });
 
   it("rejects a blank title", async () => {
-    readTasks.mockResolvedValue([taskA]);
-
     const request = new Request("http://localhost/api/tasks/a", {
       method: "PATCH",
       body: JSON.stringify({ title: "   " }),
@@ -89,11 +79,23 @@ describe("PATCH /api/tasks/:id", () => {
     const res = await PATCH(request, context("a"));
 
     expect(res.status).toBe(400);
-    expect(writeTasks).not.toHaveBeenCalled();
+    expect(updateTask).not.toHaveBeenCalled();
+  });
+
+  it("rejects a title longer than the max length", async () => {
+    const request = new Request("http://localhost/api/tasks/a", {
+      method: "PATCH",
+      body: JSON.stringify({ title: "a".repeat(201) }),
+    });
+
+    const res = await PATCH(request, context("a"));
+
+    expect(res.status).toBe(400);
+    expect(updateTask).not.toHaveBeenCalled();
   });
 
   it("returns an error for an id that does not exist", async () => {
-    readTasks.mockResolvedValue([taskA]);
+    updateTask.mockReturnValue(null);
 
     const request = new Request("http://localhost/api/tasks/missing", {
       method: "PATCH",
@@ -103,26 +105,24 @@ describe("PATCH /api/tasks/:id", () => {
     const res = await PATCH(request, context("missing"));
 
     expect(res.status).toBe(404);
-    expect(writeTasks).not.toHaveBeenCalled();
   });
 });
 
 describe("DELETE /api/tasks/:id", () => {
-  it("removes the matching task and keeps the rest", async () => {
-    readTasks.mockResolvedValue([taskA, taskB]);
+  it("removes the matching task", async () => {
+    deleteTask.mockReturnValue(true);
 
     const res = await DELETE(new Request("http://localhost/api/tasks/a"), context("a"));
 
     expect(res.status).toBe(200);
-    expect(writeTasks).toHaveBeenCalledWith([taskB]);
+    expect(deleteTask).toHaveBeenCalledWith("a");
   });
 
-  it("does not write and reports an error for an id that does not exist", async () => {
-    readTasks.mockResolvedValue([taskA, taskB]);
+  it("reports an error for an id that does not exist", async () => {
+    deleteTask.mockReturnValue(false);
 
     const res = await DELETE(new Request("http://localhost/api/tasks/missing"), context("missing"));
 
     expect(res.status).toBe(404);
-    expect(writeTasks).not.toHaveBeenCalled();
   });
 });

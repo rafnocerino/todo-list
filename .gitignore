@@ -25,7 +25,9 @@
 *.pem
 
 # local data storage
-/data/tasks.json
+/data/tasks.db
+/data/tasks.db-wal
+/data/tasks.db-shm
 
 # debug
 npm-debug.log*

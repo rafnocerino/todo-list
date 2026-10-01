@@ -1,9 +1,9 @@
-import { readTasks, writeTasks } from "@/lib/storage";
+import { getAllTasks, insertTask } from "@/lib/storage";
 import { MAX_TITLE_LENGTH, Task } from "@/lib/types";
 
 export async function GET() {
   try {
-    const tasks = await readTasks();
+    const tasks = getAllTasks();
     return Response.json(tasks);
   } catch (error) {
     // it could be useful to also log the error on file (avoived for brevity)
@@ -32,8 +32,7 @@ export async function POST(request: Request) {
       createdAt: new Date().toISOString(),
     };
 
-    const oldTasks = await readTasks();
-    await writeTasks([...oldTasks, task]);
+    insertTask(task);
 
     return Response.json(task, { status: 201 });
   } catch (error) {

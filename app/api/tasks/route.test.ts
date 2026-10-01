@@ -1,12 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { Task } from "@/lib/types";
 
-const { readTasks, writeTasks } = vi.hoisted(() => ({
-  readTasks: vi.fn(),
-  writeTasks: vi.fn(),
+const { getAllTasks, insertTask } = vi.hoisted(() => ({
+  getAllTasks: vi.fn(),
+  insertTask: vi.fn(),
 }));
 
-vi.mock("@/lib/storage", () => ({ readTasks, writeTasks }));
+vi.mock("@/lib/storage", () => ({ getAllTasks, insertTask }));
 
 const { GET, POST } = await import("./route");
 
@@ -23,7 +23,7 @@ beforeEach(() => {
 
 describe("GET /api/tasks", () => {
   it("returns all stored tasks", async () => {
-    readTasks.mockResolvedValue([existingTask]);
+    getAllTasks.mockReturnValue([existingTask]);
 
     const res = await GET();
 
@@ -32,7 +32,9 @@ describe("GET /api/tasks", () => {
   });
 
   it("returns a 500 when reading storage fails", async () => {
-    readTasks.mockRejectedValue(new Error("disk error"));
+    getAllTasks.mockImplementation(() => {
+      throw new Error("disk error");
+    });
 
     const res = await GET();
 
@@ -42,8 +44,6 @@ describe("GET /api/tasks", () => {
 
 describe("POST /api/tasks", () => {
   it("creates a task with a generated id and createdAt", async () => {
-    readTasks.mockResolvedValue([existingTask]);
-
     const request = new Request("http://localhost/api/tasks", {
       method: "POST",
       body: JSON.stringify({ title: "New task" }),
@@ -55,13 +55,9 @@ describe("POST /api/tasks", () => {
     expect(res.status).toBe(201);
     expect(created).toMatchObject({ title: "New task", completed: false });
     expect(typeof created.id).toBe("string");
-    expect(created.id).not.toBe(existingTask.id);
     expect(() => new Date(created.createdAt).toISOString()).not.toThrow();
 
-    expect(writeTasks).toHaveBeenCalledWith([
-      existingTask,
-      expect.objectContaining({ title: "New task" }),
-    ]);
+    expect(insertTask).toHaveBeenCalledWith(expect.objectContaining({ title: "New task" }));
   });
 
   it("rejects a missing title with 400 and does not write", async () => {
@@ -73,7 +69,7 @@ describe("POST /api/tasks", () => {
     const res = await POST(request);
 
     expect(res.status).toBe(400);
-    expect(writeTasks).not.toHaveBeenCalled();
+    expect(insertTask).not.toHaveBeenCalled();
   });
 
   it("rejects a blank/whitespace-only title with 400", async () => {
@@ -85,6 +81,18 @@ describe("POST /api/tasks", () => {
     const res = await POST(request);
 
     expect(res.status).toBe(400);
-    expect(writeTasks).not.toHaveBeenCalled();
+    expect(insertTask).not.toHaveBeenCalled();
+  });
+
+  it("rejects a title longer than the max length with 400", async () => {
+    const request = new Request("http://localhost/api/tasks", {
+      method: "POST",
+      body: JSON.stringify({ title: "a".repeat(201) }),
+    });
+
+    const res = await POST(request);
+
+    expect(res.status).toBe(400);
+    expect(insertTask).not.toHaveBeenCalled();
   });
 });

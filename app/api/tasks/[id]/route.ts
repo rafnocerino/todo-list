@@ -1,16 +1,13 @@
-import { readTasks, writeTasks } from "@/lib/storage";
-import { MAX_TITLE_LENGTH, Task } from "@/lib/types";
+import { deleteTask, updateTask } from "@/lib/storage";
+import { MAX_TITLE_LENGTH } from "@/lib/types";
 
 export async function DELETE(request: Request, context: RouteContext<"/api/tasks/[id]">) {
   const { id } = await context.params;
   try {
-    const allTasks: Task[] = await readTasks();
-
-    const filteredTasks = allTasks.filter((el) => el.id !== id);
-    if (filteredTasks.length === allTasks.length) {
+    const removed = deleteTask(id);
+    if (!removed) {
       return Response.json({ error: "Requested task is missing" }, { status: 404 });
     }
-    await writeTasks(filteredTasks);
 
     return Response.json({ message: "Task removed successfully" }, { status: 200 });
   } catch (error) {
@@ -40,25 +37,16 @@ export async function PATCH(request: Request, context: RouteContext<"/api/tasks/
       );
     }
 
-    const allTasks: Task[] = await readTasks();
+    const updated = updateTask(id, {
+      ...(body.completed !== undefined ? { completed: body.completed } : {}),
+      ...(title !== undefined ? { title } : {}),
+    });
 
-    const targetTaskIndex = allTasks.findIndex((el) => el.id === id);
-    if (targetTaskIndex === -1) {
+    if (!updated) {
       return Response.json({ error: "Requested task is missing" }, { status: 404 });
     }
 
-    const updatedTaskList = allTasks.map((el) => {
-      if (el.id !== id) return el;
-      return {
-        ...el,
-        ...(body.completed !== undefined ? { completed: body.completed } : {}),
-        ...(title !== undefined ? { title } : {}),
-      };
-    });
-
-    await writeTasks(updatedTaskList);
-
-    return Response.json(updatedTaskList[targetTaskIndex], { status: 200 });
+    return Response.json(updated, { status: 200 });
   } catch (error) {
     // it could be useful to also log the error on file (avoived for brevity)
     return Response.json({ error: "Error occurred while updating the task" }, { status: 500 });
