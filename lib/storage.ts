@@ -11,8 +11,8 @@ const DB_FILE = path.join(DATA_DIR, "tasks.db");
 fs.mkdirSync(DATA_DIR, { recursive: true });
 
 const db = new Database(DB_FILE);
-db.pragma("journal_mode = WAL");
 db.pragma("busy_timeout = 5000");
+db.pragma("journal_mode = WAL");
 
 db.exec(`
   CREATE TABLE IF NOT EXISTS tasks (

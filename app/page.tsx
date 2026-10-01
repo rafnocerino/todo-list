@@ -155,7 +155,11 @@ export default function Home() {
         )}
 
         <form onSubmit={handleAddTask} className="mb-6 flex gap-2">
+          <label htmlFor="new-task-title" className="sr-only">
+            New task title
+          </label>
           <input
+            id="new-task-title"
             type="text"
             value={newTitle}
             onChange={(e) => setNewTitle(e.target.value)}

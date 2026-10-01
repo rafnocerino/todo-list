@@ -51,13 +51,24 @@ describe("TaskItem", () => {
     expect(onToggle).toHaveBeenCalledWith("1");
   });
 
-  it("calls onDelete with the task id when the delete button is clicked", async () => {
+  it("calls onDelete with the task id when the delete is confirmed", async () => {
+    vi.spyOn(window, "confirm").mockReturnValue(true);
     const user = userEvent.setup();
     const { onDelete } = setup();
 
     await user.click(screen.getByRole("button", { name: /delete/i }));
 
     expect(onDelete).toHaveBeenCalledWith("1");
+  });
+
+  it("does not call onDelete when the confirmation is dismissed", async () => {
+    vi.spyOn(window, "confirm").mockReturnValue(false);
+    const user = userEvent.setup();
+    const { onDelete } = setup();
+
+    await user.click(screen.getByRole("button", { name: /delete/i }));
+
+    expect(onDelete).not.toHaveBeenCalled();
   });
 
   describe("editing the title", () => {

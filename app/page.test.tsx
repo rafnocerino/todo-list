@@ -89,6 +89,7 @@ describe("Home page", () => {
   });
 
   it("shows an error banner and keeps the task when deleting fails", async () => {
+    vi.spyOn(window, "confirm").mockReturnValue(true);
     const user = userEvent.setup();
     const fetchMock = vi
       .fn()

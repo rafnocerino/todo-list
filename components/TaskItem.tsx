@@ -44,6 +44,12 @@ export function TaskItem({
     }
   }
 
+  function handleDelete() {
+    if (window.confirm(`Are you sure you want to delete "${task.title}"?`)) {
+      onDelete(task.id);
+    }
+  }
+
   return (
     <li className="flex items-center gap-3 rounded-lg border border-teal-900/10 bg-white px-3 py-2 shadow-sm dark:border-teal-50/10 dark:bg-stone-800">
       <input
@@ -96,7 +102,7 @@ export function TaskItem({
       )}
 
       <button
-        onClick={() => onDelete(task.id)}
+        onClick={handleDelete}
         aria-label={`Delete "${task.title}"`}
         className="shrink-0 rounded-lg p-1.5 text-teal-900/40 transition-colors hover:bg-red-50 hover:text-red-600 dark:text-teal-50/40 dark:hover:bg-red-950 dark:hover:text-red-400"
       >
